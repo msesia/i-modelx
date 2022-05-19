@@ -7,6 +7,7 @@ This repository contains R and Python code accompanying the following paper:
 Matteo Sesia and Tianshu Sun
 "Individualized conditional independence testing under model-X with heterogeneous samples and interactions"
 arXiv preprint (2022)
+https://arxiv.org/abs/2205.08653
 ```
 
 ## Paper abstract
