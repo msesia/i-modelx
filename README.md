@@ -1,4 +1,4 @@
-# Individualized model-X
+# Individualized model-X inference
 
 
 This repository contains R and Python code accompanying the following paper:
