@@ -1,7 +1,7 @@
 # Individualized model-X inference
 
 
-This repository contains R and Python code accompanying the following paper:
+This repository contains R and Python code accompanying the following [paper](https://arxiv.org/abs/2205.08653):
 
 ```
 Matteo Sesia and Tianshu Sun
