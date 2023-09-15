@@ -1,28 +1,16 @@
-# Individualized model-X inference
+# Subgroup-selective model-X inference
 
 
 This repository contains R and Python code accompanying the following [paper](https://arxiv.org/abs/2205.08653):
 
 ```
 Matteo Sesia and Tianshu Sun
-"Individualized conditional independence testing under model-X with heterogeneous samples and interactions"
-arXiv preprint (2022)
+"Searching for subgroup-specific associations while controlling the false discovery rate "
+arXiv preprint (2023)
 https://arxiv.org/abs/2205.08653
 ```
 
 ## Paper abstract
 
-Model-X knockoffs and the conditional randomization test are methods that search for conditional
-associations in large data sets, controlling the type-I errors if the joint distribution of the predictors is
-known. However, they cannot test for interactions nor find whether an association is only significant
-within a latent subset of a heterogeneous population. We address this limitation by developing an
-extension of the knockoff filter that tests conditional associations within automatically detected subsets
-of individuals, provably controlling the false discovery rate for the selected hypotheses. Then, under
-the additional assumption of a partially linear model with a binary predictor, we extend the conditional
-randomization test as to make inferences about quantiles of individual effects that are robust to sample
-heterogeneity and interactions. The performances of these methods are investigated through simulations
-and with the analysis of data from a randomized blood donation experiment with several treatments.
+This paper introduces an innovative method for conducting conditional independence testing in high-dimensional data, facilitating the automated discovery of significant associations within distinct subgroups of a population, all while controlling the false discovery rate. This is achieved by expanding upon the model-X knockoff filter to provide more informative inferences. Our enhanced inferences can help explain sample heterogeneity and uncover interactions, making better use of the capabilities offered by modern machine learning models. Specifically, our method is able to leverage any model for the identification of data-driven hypotheses pertaining to interesting population subgroups. Then, it rigorously test these hypotheses without succumbing to selection bias. Importantly, our approach is efficient and does not require sample splitting. We demonstrate the effectiveness of our method through simulations and numerical experiments, using data derived from a randomized experiment featuring multiple treatment variables.
 
-## Contents
-
-This repository is under active development. Stay tuned for more updates. 
