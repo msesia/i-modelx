@@ -15,7 +15,7 @@ partition_covariates <- function(Z, vars.split) {
     return(out)
 }
 
-skf_analysis <- function(Y, X, Xk, Z.noint, Z.int, ite=NULL, family = "binomial", fdr.nominal=0.1, fdr.offset=0,
+aLKF_analysis <- function(Y, X, Xk, Z.noint, Z.int, ite=NULL, family = "binomial", fdr.nominal=0.1, fdr.offset=0,
                          naive=FALSE, split=FALSE, vanilla=FALSE, cross.prior=TRUE, num.int=2, verbose=TRUE) {
 
     colnames(X) <- paste("X", 1:ncol(X), sep="_")
@@ -58,26 +58,26 @@ skf_analysis <- function(Y, X, Xk, Z.noint, Z.int, ite=NULL, family = "binomial"
         partition <- tibble(variable=NA, covariate=NA, covariate.name=NA, importance=NA) %>% head(0)
         env.list <- lapply(1:N, function(j) rep(1,n))
     } else {
-        part.res <- skf_partition_intlasso(Y[fold.1], X[fold.1,], Xk[fold.1,], Z.noint[fold.1,], Z.int[fold.1,], V.swap.1[fold.1,],
+        part.res <- aLKF_partition_intlasso(Y[fold.1], X[fold.1,], Xk[fold.1,], Z.noint[fold.1,], Z.int[fold.1,], V.swap.1[fold.1,],
                                            family=family, num.int=num.int, verbose=verbose)
         partition <- part.res$partition
         env.list <- part.res$env.list
     }
 
     ## Compute statistics for each variable in each group
-    stats <- skf_compute_stats(Y[fold.2], X[fold.2,], Xk[fold.2,], Z.noint[fold.2,], Z.int[fold.2,], V.swap.2[fold.2,], partition,
+    stats <- aLKF_compute_stats(Y[fold.2], X[fold.2,], Xk[fold.2,], Z.noint[fold.2,], Z.int[fold.2,], V.swap.2[fold.2,], partition,
                                family=family, random.swap=random.swap, vanilla=vanilla, cross.prior=cross.prior, scale.variables=TRUE, verbose=verbose)
 
     ## Make the full list of tested hypotheses and check which of them are truly null
-    hypotheses <- skf_define_hypotheses(partition, env.list, N, ite=ite)
+    hypotheses <- aLKF_define_hypotheses(partition, env.list, N, ite=ite)
 
     ## Apply the knockoff filter
-    disc.res <- skf_filter_stats(stats, fdr.nominal=fdr.nominal, fdr.offset=fdr.offset)
+    disc.res <- aLKF_filter_stats(stats, fdr.nominal=fdr.nominal, fdr.offset=fdr.offset)
     discoveries <- disc.res$discoveries
     groups <- disc.res$groups
 
     ## Make the discoveries intellegible
-    discoveries <- skf_parse_discoveries(discoveries, partition, N)
+    discoveries <- aLKF_parse_discoveries(discoveries, partition, N)
 
     ## Return results
     out <- c()
@@ -86,7 +86,7 @@ skf_analysis <- function(Y, X, Xk, Z.noint, Z.int, ite=NULL, family = "binomial"
     return(out)
 }
 
-skf_define_hypotheses <- function(partition, groups, N, ite=NULL) {
+aLKF_define_hypotheses <- function(partition, groups, N, ite=NULL) {
     vars.split <- lapply(1:N, function(j) { filter(partition,variable==j)$covariate})
     vars.split.names <- lapply(1:N, function(j) { filter(partition,variable==j)$covariate.name})
 
@@ -146,7 +146,7 @@ skf_define_hypotheses <- function(partition, groups, N, ite=NULL) {
 }
 
 
-skf_parse_discoveries <- function(discoveries, partition, N) {
+aLKF_parse_discoveries <- function(discoveries, partition, N) {
     ## List of binary variable splits for each variable
     vars.split <- lapply(1:N, function(j) { filter(partition,variable==j)$covariate})
     vars.split.names <- lapply(1:N, function(j) { filter(partition,variable==j)$covariate.name})
@@ -176,7 +176,7 @@ skf_parse_discoveries <- function(discoveries, partition, N) {
     return(discoveries)
 }
 
-skf_partition_intlasso <- function(Y, X, Xk, Z.noint, Z.int, V.swap, num.int=2, family="gaussian", scale.variables=FALSE, verbose=TRUE) {
+aLKF_partition_intlasso <- function(Y, X, Xk, Z.noint, Z.int, V.swap, num.int=2, family="gaussian", scale.variables=FALSE, verbose=TRUE) {
 
     if(verbose) {
         cat(sprintf("Looking for interactions with the lasso...\n"))
@@ -221,16 +221,16 @@ skf_partition_intlasso <- function(Y, X, Xk, Z.noint, Z.int, V.swap, num.int=2, 
     frmla <- as.formula(str.frmla)
     X.design <- model.matrix(frmla, data.tmp, keep.order = TRUE)[,-1]
 
-    ## Create masked data set by swapping variables-knockoffs
-    X.mask <- knockoff.random.swap(X.design[,1:N], X.design[,(N+1):(2*N)], V.swap)
+    ## Create cloaked data set by swapping variables-knockoffs
+    X.cloaked <- knockoff.random.swap(X.design[,1:N], X.design[,(N+1):(2*N)], V.swap)
     X.design.others <- X.design[,(2*N+1):ncol(X.design)]
-    X.design.mask <- cbind(X.mask, X.design.others)
+    X.design.cloaked <- cbind(X.cloaked, X.design.others)
 
     ## Fit the lasso with interactions
     if(scale.variables) {
-        cv.fit.int <- cv.glmnet(safe.scale(X.design.mask), Y, family=family, alpha=1)
+        cv.fit.int <- cv.glmnet(safe.scale(X.design.cloaked), Y, family=family, alpha=1)
     } else {
-        cv.fit.int <- cv.glmnet(X.design.mask, Y, family=family, alpha=1)
+        cv.fit.int <- cv.glmnet(X.design.cloaked, Y, family=family, alpha=1)
     }
     ##plot(cv.fit.int)
     beta.hat.int <- coef(cv.fit.int, s="lambda.min")
@@ -316,7 +316,7 @@ skf_partition_intlasso <- function(Y, X, Xk, Z.noint, Z.int, V.swap, num.int=2, 
     return(out)
 }
 
-skf_filter_stats <- function(stats, fdr.nominal=0.1, fdr.offset=NULL) {
+aLKF_filter_stats <- function(stats, fdr.nominal=0.1, fdr.offset=NULL) {
     ## List of binary variable splits for each variable
     vars.split <- stats$vars.split
     ## List of individual clusters (environments) for each variable
@@ -368,7 +368,7 @@ skf_filter_stats <- function(stats, fdr.nominal=0.1, fdr.offset=NULL) {
     return(out)
 }
 
-skf_compute_stats <- function(Y, X, Xk, Z.noint, Z.int, V.swap, partition, family = "binomial",
+aLKF_compute_stats <- function(Y, X, Xk, Z.noint, Z.int, V.swap, partition, family = "binomial",
                               random.swap=TRUE, vanilla=FALSE, cross.prior=TRUE, scale.variables=TRUE, verbose=TRUE) {
 
     N <- ncol(X)
@@ -416,17 +416,17 @@ compute_stats_by_group <- function(Z, X, Xk, Y, V.swap, env.list, family = "gaus
     N = ncol(X)
     n = nrow(X)
 
-    ## Create masked data set by swapping variables-knockoffs
-    X.Xk.mask <- knockoff.random.swap(X, Xk, V.swap)
-    X.mask <- X.Xk.mask[,1:N]
-    Xk.mask <- X.Xk.mask[,(N+1):(2*N)]
-    data.mask = cbind(Z, X.Xk.mask)
-    ## Fit the lasso on the masked data
+    ## Create cloaked data set by swapping variables-knockoffs
+    X.Xk.cloaked <- knockoff.random.swap(X, Xk, V.swap)
+    X.cloaked <- X.Xk.cloaked[,1:N]
+    Xk.cloaked <- X.Xk.cloaked[,(N+1):(2*N)]
+    data.cloaked = cbind(Z, X.Xk.cloaked)
+    ## Fit the lasso on the cloaked data
     beta.hat.prior <- tryCatch({
-         cv.fit <- cv.glmnet(data.mask, Y, family = family, nfolds=10, alpha=1)
+         cv.fit <- cv.glmnet(data.cloaked, Y, family = family, nfolds=10, alpha=1)
          beta.hat.prior = coef(cv.fit, s="lambda.min")[-1]
     }, error = function(e){
-        beta.hat.prior = rep(1, ncol(data.mask))
+        beta.hat.prior = rep(1, ncol(data.cloaked))
     })
     beta.hat.prior.z = abs(beta.hat.prior[1:p.z])
     beta.hat.prior = abs(beta.hat.prior[(p.z+1):(p.z+N)])+abs(beta.hat.prior[(p.z+N+1):(p.z+2*N)])
@@ -440,23 +440,23 @@ compute_stats_by_group <- function(Z, X, Xk, Y, V.swap, env.list, family = "gaus
                 flush.console()
             }
             if(random.swap) {
-                ## Create masked data set by swapping variables-knockoffs, everywhere except in the current variable-environment
+                ## Create cloaked data set by swapping variables-knockoffs, everywhere except in the current variable-environment
                 idx.env = which(env.list[[j]]==k)
                 V.swap.2 <- V.swap
                 V.swap.2[idx.env,j] = 0
-                X.mask.2 = X * (1-V.swap.2) + Xk * V.swap.2
-                Xk.mask.2 = X * V.swap.2 + Xk * (1-V.swap.2)
+                X.cloaked.2 = X * (1-V.swap.2) + Xk * V.swap.2
+                Xk.cloaked.2 = X * V.swap.2 + Xk * (1-V.swap.2)
             } else {
-                X.mask = X
-                Xk.mask = Xk
-                X.mask.2 = X
-                Xk.mask.2 = Xk
+                X.cloaked = X
+                Xk.cloaked = Xk
+                X.cloaked.2 = X
+                Xk.cloaked.2 = Xk
                 idx.env = 1:n
             }
             if((cross.prior)) {
                 if(length(idx.env)>0) {
                     ## Keep only the observations from this environment
-                    data.X = cbind(Z, X.mask.2, Xk.mask.2)[idx.env,]
+                    data.X = cbind(Z, X.cloaked.2, Xk.cloaked.2)[idx.env,]
                     data.Y = Y[idx.env]
                     if(calibrate.gamma) {
                         ## Fit the lasso, tuning weight of prior
@@ -518,13 +518,13 @@ compute_stats_by_group <- function(Z, X, Xk, Y, V.swap, env.list, family = "gaus
                 }
             } else {
                 if(min(table(Y))>=2) {
-                    ## Fit the lasso on the masked data from all environments (without current variable)
-                    data.mask = cbind(X.mask[,-j], Xk.mask[,-j],Z)
+                    ## Fit the lasso on the cloaked data from all environments (without current variable)
+                    data.cloaked = cbind(X.cloaked[,-j], Xk.cloaked[,-j],Z)
                     w <- tryCatch({
-                        cv.fit.other <- cv.glmnet(data.mask, Y, family = family, nfolds=10, alpha=1)
+                        cv.fit.other <- cv.glmnet(data.cloaked, Y, family = family, nfolds=10, alpha=1)
                         beta.hat.other = coef(cv.fit.other, s="lambda.min")[-1]
                         ## Compute 'residuals' in current environment
-                        offset <- data.mask[idx.env,] %*% beta.hat.other
+                        offset <- data.cloaked[idx.env,] %*% beta.hat.other
                         ## Fit new model
                         lm.fit <- glm(Y[idx.env]~offset+X[idx.env,j]+Xk[idx.env,j],family=family)
                         beta.hat <- as.numeric(summary(lm.fit)$coefficients[-c(1,2),3])
@@ -565,7 +565,7 @@ compute_stats_by_group <- function(Z, X, Xk, Y, V.swap, env.list, family = "gaus
 }
 
 knockoff.random.swap <- function(X, X.k, V.swap) {
-    ## Create masked data set by swapping variables-knockoffs
+    ## Create cloaked data set by swapping variables-knockoffs
     n = nrow(X)
     X.aug <- cbind(X, X.k)
     X.out <- X.aug
