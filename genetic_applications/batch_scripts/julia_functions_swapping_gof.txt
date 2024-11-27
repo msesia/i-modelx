@@ -1,0 +1,76 @@
+
+# this file contains functions to cloak data (swap original and knockoff genotypes randomly)
+
+
+# swap for white non-british
+function swap_wnb()
+    chrs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+    res = [1]
+    for c in chrs, r in res
+        # create .sh file to submit jobs
+        filename = "submit.sh"
+        open(filename, "w") do io
+            println(io, "#!/bin/bash")
+            println(io, "#")
+            println(io, "#SBATCH --job-name=wnbt$c")
+            println(io, "#")
+            println(io, "#SBATCH --time=96:00:00")
+            println(io, "#SBATCH --mem-per-cpu=150G")
+            println(io, "#SBATCH --partition=mypartition")
+            println(io, "#SBATCH --output=slurm_files/slurm-%j.out")
+            println(io, "")
+            println(io, "#save job info on joblog:")
+            println(io, "echo \"Job \$JOB_ID started on:   \" `hostname -s`")
+            println(io, "echo \"Job \$JOB_ID started on:   \" `date `")
+            println(io, "")
+            println(io, "# run code")
+            println(io, "Rscript utils/swap_chr.R whitenonbritish $r 10 $c")
+            println(io, "")                                        
+            println(io, "#echo job info on joblog:")
+            println(io, "echo \"Job \$JOB_ID ended on:   \" `hostname -s`")
+            println(io, "echo \"Job \$JOB_ID ended on:   \" `date `")
+            println(io, "#echo \" \"")
+        end
+        # submit job
+        run(`sbatch $filename`)
+        println("submitted chr $c res $r ")
+        rm(filename, force=true)
+    end
+end
+
+
+# swap for british
+function swap_b()
+    chrs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+    res = [1]
+    for c in chrs, r in res
+        # create .sh file to submit jobs
+        filename = "submit.sh"
+        open(filename, "w") do io
+            println(io, "#!/bin/bash")
+            println(io, "#")
+            println(io, "#SBATCH --job-name=bt$c")
+            println(io, "#")
+            println(io, "#SBATCH --time=96:00:00")
+            println(io, "#SBATCH --mem-per-cpu=150G")
+            println(io, "#SBATCH --partition=mypartition")
+            println(io, "#SBATCH --output=slurm_files/slurm-%j.out")
+            println(io, "")
+            println(io, "#save job info on joblog:")
+            println(io, "echo \"Job \$JOB_ID started on:   \" `hostname -s`")
+            println(io, "echo \"Job \$JOB_ID started on:   \" `date `")
+            println(io, "")
+            println(io, "# run code")
+            println(io, "Rscript utils/swap_chr.R british $r 10 $c")
+            println(io, "")                                        
+            println(io, "#echo job info on joblog:")
+            println(io, "echo \"Job \$JOB_ID ended on:   \" `hostname -s`")
+            println(io, "echo \"Job \$JOB_ID ended on:   \" `date `")
+            println(io, "#echo \" \"")
+        end
+        # submit job
+        run(`sbatch $filename`)
+        println("submitted chr $c res $r ")
+        rm(filename, force=true)
+    end
+end

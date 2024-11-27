@@ -1,0 +1,513 @@
+
+# this file contains Julia (.jl) functions for the simulations 
+
+##### Vary signal amplitude, fixed proportion of global effects ########
+
+# simulations for aLKF
+function UKB_int_sim_aLKF()
+          amplitude = [2,5,10, 15,20, 25,30, 35,40, 45,50, 55, 60] 
+          sparsity = [0.02, 0.04, 0.08]
+           fdrs = [0.1]
+           B = 100
+           propmains = [0.5]
+           weights = [0.25]
+           num_cov = [1, 2]
+           for amp in amplitude, sp in sparsity, f in fdrs, m in propmains, w in weights, c in num_cov
+               # create .sh file to submit jobs
+               filename = "submit.sh"
+               open(filename, "w") do io
+                   println(io, "#!/bin/bash")
+                   println(io, "#")
+                   println(io, "#SBATCH --job-name=sw$amp")
+                   println(io, "#")
+                   println(io, "#SBATCH --time=48:00:00")
+                   println(io, "#SBATCH --mem-per-cpu=25G")
+                   println(io, "#SBATCH --partition=mypartition")
+                   println(io, "#SBATCH --output=slurm_files/sw-%j.out")
+                   println(io, "")
+                   println(io, "#save job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `date `")
+                   println(io, "")
+                   println(io, "# run code")
+                   println(io, "ml R/4.2.0")
+                   println(io, "Rscript utils/sim_aLKF.R $sp $amp $f 2 10000 10000 $B $m $w 1 0 0.3 $c")
+                   println(io, "")                                        
+                   println(io, "#echo job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `date `")
+                   println(io, "#echo \" \"")
+               end
+               # submit job
+               run(`sbatch $filename`)
+               println("submitted amp $amp ")
+               rm(filename, force=true)
+           end
+       end
+       
+# simulation for uw-aLKF
+function UKB_int_sim_sskf_prop()
+        amplitude = [2,5,10, 15,20, 25,30, 35,40, 45,50, 55, 60] 
+          sparsity = [0.02, 0.04, 0.08]
+           fdrs = [0.1]
+           B = 100
+           propmains = [0.5]
+           num_cov = [1, 2]
+           for amp in amplitude, sp in sparsity, f in fdrs, m in propmains, c in num_cov
+               # create .sh file to submit jobs
+               filename = "submit.sh"
+               open(filename, "w") do io
+                   println(io, "#!/bin/bash")
+                   println(io, "#")
+                   println(io, "#SBATCH --job-name=s$amp")
+                   println(io, "#")
+                   println(io, "#SBATCH --time=48:00:00")
+                   println(io, "#SBATCH --mem-per-cpu=25G")
+                   println(io, "#SBATCH --partition=mypartition")
+                   println(io, "#SBATCH --output=slurm_files/s-%j.out")
+                   println(io, "")
+                   println(io, "#save job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `date `")
+                   println(io, "")
+                   println(io, "# run code")
+                   println(io, "ml R/4.2.0")
+                   println(io, "Rscript utils/sim_uwaLKF.R $sp $amp $f 2 10000 10000 $B $m 1 0 0.3 $c")
+                   println(io, "")                                        
+                   println(io, "#echo job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `date `")
+                   println(io, "#echo \" \"")
+               end
+               # submit job
+               run(`sbatch $filename`)
+               println("submitted amp $amp ")
+               rm(filename, force=true)
+           end
+       end
+       
+
+# simulations for global-KF
+function UKB_int_sim_vanilla_prop()
+        amplitude = [2,5,10, 15,20, 25,30, 35,40, 45,50, 55, 60] 
+          sparsity = [0.02, 0.04, 0.08]
+           fdrs = [0.1]
+           B = 100
+           propmains = [0.5]
+           num_cov = [1, 2]
+           for amp in amplitude, sp in sparsity, f in fdrs, m in propmains, c in num_cov
+               # create .sh file to submit jobs
+               filename = "submit.sh"
+               open(filename, "w") do io
+                   println(io, "#!/bin/bash")
+                   println(io, "#")
+                   println(io, "#SBATCH --job-name=v$amp")
+                   println(io, "#")
+                   println(io, "#SBATCH --time=48:00:00")
+                   println(io, "#SBATCH --mem-per-cpu=25G")
+                   println(io, "#SBATCH --partition=mypartition")
+                   println(io, "#SBATCH --output=slurm_files/v-%j.out")
+                   println(io, "")
+                   println(io, "#save job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `date `")
+                   println(io, "")
+                   println(io, "# run code")
+                   println(io, "ml R/4.2.0")
+                   println(io, "Rscript utils/sim_globalKF.R $sp $amp $f 2 10000 10000 $B $m 1 0 0.3 $c")
+                   println(io, "")                                        
+                   println(io, "#echo job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `date `")
+                   println(io, "#echo \" \"")
+               end
+               # submit job
+               run(`sbatch $filename`)
+               println("submitted amp $amp ")
+               rm(filename, force=true)
+           end
+       end
+
+# simulations for LKF-split
+function UKB_int_sim_split_prop()
+        amplitude = [2,5,10, 15,20, 25,30, 35,40, 45,50, 55, 60] 
+          sparsity = [0.02, 0.04, 0.08]
+           fdrs = [0.1]
+           B = 100
+           propmains = [0.5]
+           num_cov = [1, 2]
+           for amp in amplitude, sp in sparsity, f in fdrs, m in propmains, c in num_cov
+               # create .sh file to submit jobs
+               filename = "submit.sh"
+               open(filename, "w") do io
+                   println(io, "#!/bin/bash")
+                   println(io, "#")
+                   println(io, "#SBATCH --job-name=spl$amp")
+                   println(io, "#")
+                   println(io, "#SBATCH --time=48:00:00")
+                   println(io, "#SBATCH --mem-per-cpu=25G")
+                   println(io, "#SBATCH --partition=mypartition")
+                   println(io, "#SBATCH --output=slurm_files/spl-%j.out")
+                   println(io, "")
+                   println(io, "#save job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `date `")
+                   println(io, "")
+                   println(io, "# run code")
+                   println(io, "ml R/4.2.0")
+                   println(io, "Rscript utils/sim_LKF_split.R $sp $amp $f 2 10000 10000 $B $m 1 0 0.3 $c")
+                   println(io, "")                                        
+                   println(io, "#echo job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `date `")
+                   println(io, "#echo \" \"")
+               end
+               # submit job
+               run(`sbatch $filename`)
+               println("submitted amp $amp ")
+               rm(filename, force=true)
+           end
+       end
+       
+
+# simulations for LKF-naive
+function UKB_int_sim_naive_prop()
+        amplitude = [2,5,10, 15,20, 25,30, 35,40, 45,50, 55, 60] 
+          sparsity = [0.02, 0.04, 0.08]
+           fdrs = [0.1]
+           B = 100
+           propmains = [0.5]
+           num_cov = [1, 2]
+           for amp in amplitude, sp in sparsity, f in fdrs, m in propmains, c in num_cov
+               # create .sh file to submit jobs
+               filename = "submit.sh"
+               open(filename, "w") do io
+                   println(io, "#!/bin/bash")
+                   println(io, "#")
+                   println(io, "#SBATCH --job-name=nv$amp")
+                   println(io, "#")
+                   println(io, "#SBATCH --time=48:00:00")
+                   println(io, "#SBATCH --mem-per-cpu=25G")
+                   println(io, "#SBATCH --partition=mypartition")
+                   println(io, "#SBATCH --output=slurm_files/nv-%j.out")
+                   println(io, "")
+                   println(io, "#save job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `date `")
+                   println(io, "")
+                   println(io, "# run code")
+                   println(io, "ml R/4.2.0")
+                   println(io, "Rscript utils/sim_LKF_naive.R $sp $amp $f 2 10000 10000 $B $m 1 0 0.3 $c")
+                   println(io, "")                                        
+                   println(io, "#echo job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `date `")
+                   println(io, "#echo \" \"")
+               end
+               # submit job
+               run(`sbatch $filename`)
+               println("submitted amp $amp ")
+               rm(filename, force=true)
+           end
+       end       
+
+
+
+# simulations for separate analysis for 2 covariates (fixed-LKF)
+function UKB_int_sim_sep_prop_2cov()
+        amplitude = [2,5,10, 15,20, 25,30, 35,40, 45,50, 55, 60] 
+          sparsity = [0.02, 0.04, 0.08]
+           fdrs = [0.1]
+           B = 100
+           propmains = [0.5]
+           for amp in amplitude, sp in sparsity, f in fdrs, m in propmains
+               # create .sh file to submit jobs
+               filename = "submit.sh"
+               open(filename, "w") do io
+                   println(io, "#!/bin/bash")
+                   println(io, "#")
+                   println(io, "#SBATCH --job-name=sg$amp")
+                   println(io, "#")
+                   println(io, "#SBATCH --time=48:00:00")
+                   println(io, "#SBATCH --mem-per-cpu=25G")
+                   println(io, "#SBATCH --partition=mypartition")
+                   println(io, "#SBATCH --output=slurm_files/sep-%j.out")
+                   println(io, "")
+                   println(io, "#save job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `date `")
+                   println(io, "")
+                   println(io, "# run code")
+                   println(io, "ml R/4.2.0")
+                   println(io, "Rscript utils/sim_fixed_LKF_2cov.R $sp $amp $f 2 10000 10000 $B $m 1 0 0.3")
+                   println(io, "")                                        
+                   println(io, "#echo job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `date `")
+                   println(io, "#echo \" \"")
+               end
+               # submit job
+               run(`sbatch $filename`)
+               println("submitted amp $amp ")
+               rm(filename, force=true)
+           end
+       end       
+
+
+
+
+# simulations for separate groups for 1 covariate (fixed-LKF)
+function UKB_int_sim_sep_prop()
+        amplitude = [2,5,10, 15,20, 25,30, 35,40, 45,50, 55, 60] 
+          sparsity = [0.02, 0.04, 0.08]
+           fdrs = [0.1]
+           B = 100
+           propmains = [0.5]
+           for amp in amplitude, sp in sparsity, f in fdrs, m in propmains
+               # create .sh file to submit jobs
+               filename = "submit.sh"
+               open(filename, "w") do io
+                   println(io, "#!/bin/bash")
+                   println(io, "#")
+                   println(io, "#SBATCH --job-name=sg$amp")
+                   println(io, "#")
+                   println(io, "#SBATCH --time=48:00:00")
+                   println(io, "#SBATCH --mem-per-cpu=25G")
+                   println(io, "#SBATCH --partition=mypartition")
+                   println(io, "#SBATCH --output=slurm_files/sep-%j.out")
+                   println(io, "")
+                   println(io, "#save job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `date `")
+                   println(io, "")
+                   println(io, "# run code")
+                   println(io, "ml R/4.2.0")
+                   println(io, "Rscript utils/sim_fixed_LKF_1cov.R $sp $amp $f 2 10000 10000 $B $m 1 0 0.3")
+                   println(io, "")                                        
+                   println(io, "#echo job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `date `")
+                   println(io, "#echo \" \"")
+               end
+               # submit job
+               run(`sbatch $filename`)
+               println("submitted amp $amp ")
+               rm(filename, force=true)
+           end
+       end    
+
+
+
+####### Vary proportion of global effects with fixed amplitude ##############
+       
+# for aLKF
+function UKB_int_sim_aLKF()
+          amplitude = [15] 
+          sparsity = [0.02, 0.04, 0.08]
+           fdrs = [0.1]
+           B = 100
+           propmains = [0, 0.1,0.2,0.3, 0.4,0.5,0.6, 0.7,0.8,0.9,1] #
+           weights = [0.25]
+           num_cov = [1, 2]
+           for amp in amplitude, sp in sparsity, f in fdrs, m in propmains, w in weights, c in num_cov
+               # create .sh file to submit jobs
+               filename = "submit.sh"
+               open(filename, "w") do io
+                   println(io, "#!/bin/bash")
+                   println(io, "#")
+                   println(io, "#SBATCH --job-name=sw$amp")
+                   println(io, "#")
+                   println(io, "#SBATCH --time=48:00:00")
+                   println(io, "#SBATCH --mem-per-cpu=25G")
+                   println(io, "#SBATCH --partition=mypartition")
+                   println(io, "#SBATCH --output=slurm_files/sw-%j.out")
+                   println(io, "")
+                   println(io, "#save job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `date `")
+                   println(io, "")
+                   println(io, "# run code")
+                   println(io, "ml R/4.2.0")
+                   println(io, "Rscript utils/sim_aLKF.R $sp $amp $f 2 10000 10000 $B $m $w 1 0 0.3 $c")
+                   println(io, "")                                        
+                   println(io, "#echo job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `date `")
+                   println(io, "#echo \" \"")
+               end
+               # submit job
+               run(`sbatch $filename`)
+               println("submitted amp $amp ")
+               rm(filename, force=true)
+           end
+       end
+       
+       
+# for uw-aLKF
+function UKB_int_sim_sskf_prop()
+        amplitude = [15] 
+          sparsity = [0.02, 0.04, 0.08]
+           fdrs = [0.1]
+           B = 100
+           propmains = [0, 0.1,0.2,0.3, 0.4,0.5,0.6, 0.7,0.8,0.9,1] 
+           num_cov = [1, 2]
+           for amp in amplitude, sp in sparsity, f in fdrs, m in propmains, c in num_cov
+               # create .sh file to submit jobs
+               filename = "submit.sh"
+               open(filename, "w") do io
+                   println(io, "#!/bin/bash")
+                   println(io, "#")
+                   println(io, "#SBATCH --job-name=s$amp")
+                   println(io, "#")
+                   println(io, "#SBATCH --time=48:00:00")
+                   println(io, "#SBATCH --mem-per-cpu=25G")
+                   println(io, "#SBATCH --partition=mypartition")
+                   println(io, "#SBATCH --output=slurm_files/s-%j.out")
+                   println(io, "")
+                   println(io, "#save job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `date `")
+                   println(io, "")
+                   println(io, "# run code")
+                   println(io, "ml R/4.2.0")
+                   println(io, "Rscript utils/sim_uwaLKF.R $sp $amp $f 2 10000 10000 $B $m 1 0 0.3 $c")
+                   println(io, "")                                        
+                   println(io, "#echo job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `date `")
+                   println(io, "#echo \" \"")
+               end
+               # submit job
+               run(`sbatch $filename`)
+               println("submitted amp $amp ")
+               rm(filename, force=true)
+           end
+       end       
+       
+  
+       
+# for separate analysis 1 covariate  (fixed-LKF)
+function UKB_int_sim_sep_prop()
+        amplitude = [15] 
+          sparsity = [0.02, 0.04, 0.08]
+           fdrs = [0.1]
+           B = 100
+           propmains = [0, 0.1,0.2,0.3, 0.4,0.5,0.6, 0.7,0.8,0.9,1] 
+           for amp in amplitude, sp in sparsity, f in fdrs, m in propmains
+               # create .sh file to submit jobs
+               filename = "submit.sh"
+               open(filename, "w") do io
+                   println(io, "#!/bin/bash")
+                   println(io, "#")
+                   println(io, "#SBATCH --job-name=sg$amp")
+                   println(io, "#")
+                   println(io, "#SBATCH --time=48:00:00")
+                   println(io, "#SBATCH --mem-per-cpu=25G")
+                   println(io, "#SBATCH --partition=mypartition")
+                   println(io, "#SBATCH --output=slurm_files/sg-%j.out")
+                   println(io, "")
+                   println(io, "#save job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `date `")
+                   println(io, "")
+                   println(io, "# run code")
+                   println(io, "ml R/4.2.0")
+                   println(io, "Rscript utils/sim_fixed_LKF_1cov.R $sp $amp $f 2 10000 10000 $B $m 1 0 0.3")
+                   println(io, "")                                        
+                   println(io, "#echo job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `date `")
+                   println(io, "#echo \" \"")
+               end
+               # submit job
+               run(`sbatch $filename`)
+               println("submitted amp $amp ")
+               rm(filename, force=true)
+           end
+       end              
+
+
+# for separate group analysis (2 covariates) (fixed-LKF)
+function UKB_int_sim_sep_prop_2cov()
+         amplitude = [15] 
+          sparsity = [0.02,0.04,0.08]
+           fdrs = [0.1]
+           B = 100
+           propmains = [0, 0.1,0.2,0.3, 0.4,0.5,0.6, 0.7,0.8,0.9,1] 
+           for amp in amplitude, sp in sparsity, f in fdrs, m in propmains
+               # create .sh file to submit jobs
+               filename = "submit.sh"
+               open(filename, "w") do io
+                   println(io, "#!/bin/bash")
+                   println(io, "#")
+                   println(io, "#SBATCH --job-name=sg$amp")
+                   println(io, "#")
+                   println(io, "#SBATCH --time=48:00:00")
+                   println(io, "#SBATCH --mem-per-cpu=25G")
+                   println(io, "#SBATCH --partition=mypartition")
+                   println(io, "#SBATCH --output=slurm_files/sep-%j.out")
+                   println(io, "")
+                   println(io, "#save job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `date `")
+                   println(io, "")
+                   println(io, "# run code")
+                   println(io, "ml R/4.2.0")
+                   println(io, "Rscript utils/sim_fixed_LKF_2cov.R $sp $amp $f 2 10000 10000 $B $m 1 0 0.3")
+                   println(io, "")                                        
+                   println(io, "#echo job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `date `")
+                   println(io, "#echo \" \"")
+               end
+               # submit job
+               run(`sbatch $filename`)
+               println("submitted amp $amp ")
+               rm(filename, force=true)
+           end
+       end       
+
+
+
+# global-KF       
+function UKB_int_sim_vanilla_prop()
+          amplitude = [15] 
+          sparsity = [0.02, 0.04, 0.08]
+           fdrs = [0.1]
+           B = 100
+           propmains = [0, 0.1,0.2,0.3, 0.4,0.5,0.6, 0.7,0.8,0.9,1] 
+           num_cov = [1, 2]
+           for amp in amplitude, sp in sparsity, f in fdrs, m in propmains, c in num_cov
+               # create .sh file to submit jobs
+               filename = "submit.sh"
+               open(filename, "w") do io
+                   println(io, "#!/bin/bash")
+                   println(io, "#")
+                   println(io, "#SBATCH --job-name=v$amp")
+                   println(io, "#")
+                   println(io, "#SBATCH --time=48:00:00")
+                   println(io, "#SBATCH --mem-per-cpu=25G")
+                   println(io, "#SBATCH --partition=mypartition")
+                   println(io, "#SBATCH --output=slurm_files/v-%j.out")
+                   println(io, "")
+                   println(io, "#save job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID started on:   \" `date `")
+                   println(io, "")
+                   println(io, "# run code")
+                   println(io, "ml R/4.2.0")
+                   println(io, "Rscript utils/sim_globalKF.R $sp $amp $f 2 10000 10000 $B $m 1 0 0.3 $c")
+                   println(io, "")                                        
+                   println(io, "#echo job info on joblog:")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `hostname -s`")
+                   println(io, "echo \"Job \$JOB_ID ended on:   \" `date `")
+                   println(io, "#echo \" \"")
+               end
+               # submit job
+               run(`sbatch $filename`)
+               println("submitted amp $amp ")
+               rm(filename, force=true)
+           end
+       end
+
+
