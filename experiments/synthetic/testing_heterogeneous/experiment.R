@@ -245,7 +245,7 @@ evaluate_results <- function(discoveries, hypotheses) {
     return(res.tmp)
 }
 
-analysis_knockoffs <- function(Z, X, Y, q=0.1, offset=0, naive=FALSE, split=FALSE, vanilla=FALSE, method.cluster="Lasso") {
+analysis_knockoffs <- function(Z, X, Y, q=0.1, offset=0, naive=FALSE, split=FALSE, KFglobal=FALSE, method.cluster="Lasso") {
     n = nrow(X)
     p1 = ncol(X)
     Z0 <- Z[,1:p0]
@@ -254,11 +254,11 @@ analysis_knockoffs <- function(Z, X, Y, q=0.1, offset=0, naive=FALSE, split=FALS
     cross.prior=TRUE
     if(naive) cross.prior = FALSE
     if(split) cross.prior = FALSE
-    if(vanilla) cross.prior = FALSE
+    if(KFglobal) cross.prior = FALSE
 
     random.swap=TRUE
     if(naive) random.swap = FALSE
-    if(vanilla) random.swap = FALSE
+    if(KFglobal) random.swap = FALSE
 
     
     generate.knockoff.treat <- function(X) {
@@ -269,7 +269,7 @@ analysis_knockoffs <- function(Z, X, Y, q=0.1, offset=0, naive=FALSE, split=FALS
     }
     X.k <- generate.knockoff.treat(X)
 
-    ## Randomly swap variables and knockoffs
+    ## Randomly swap variables and knockoffs (cloaking)
     if(split) {
         fold.1 <- sort(sample(n,round(n/2),replace=FALSE))
         fold.2 <- setdiff(1:n, fold.1)
@@ -289,7 +289,7 @@ analysis_knockoffs <- function(Z, X, Y, q=0.1, offset=0, naive=FALSE, split=FALS
     X.swap = knockoff.random.swap(X, X.k, V.swap.1)
 
     ## Clustering HTE using knockoff-augmented data
-    if(vanilla) {
+    if(KFglobal) {
         env.list <- lapply(1:p1, function(j) { rep(1,n) })
         vars.split <- lapply(1:p1, function(j) { c() })
     } else {
@@ -434,23 +434,23 @@ experiment <- function(seed, seed.model=2022) {
     flush.console()
 
     ###############################
-    ## VANILLA knockoff analysis ##
+    ## GLOBAL knockoff analysis ##
     ###############################
-    cat(sprintf("Applying VANILLA method...\n"))
+    cat(sprintf("Applying GLOBAL method...\n"))
     flush.console()
     ## Compute list of discoveries
-    out.vanilla <- analysis_knockoffs(Z, X, Y, q=fdr.nominal, offset=offset, vanilla=TRUE)
-    discoveries.vanilla <- out.vanilla$discoveries
+    out.KFglobal <- analysis_knockoffs(Z, X, Y, q=fdr.nominal, offset=offset, KFglobal=TRUE)
+    discoveries.KFglobal <- out.KFglobal$discoveries
     ## Define hypotheses
-    vars.split <- out.vanilla$splits
+    vars.split <- out.KFglobal$splits
     hypotheses <- define_hypotheses(vars.split, beta_e, Z, X)
     ## Assess results
-    res.vanilla <- evaluate_results(discoveries.vanilla, hypotheses) %>% mutate(Method="Vanilla", q=fdr.nominal, offset=offset)
-    cat(sprintf("Done with VANILLA method.\n"))
+    res.KFglobal <- evaluate_results(discoveries.KFglobal, hypotheses) %>% mutate(Method="KFglobal", q=fdr.nominal, offset=offset)
+    cat(sprintf("Done with GLOBAL method.\n"))
     flush.console()
 
     ## Combine results
-    out <- rbind(res.exact, res.naive, res.split, res.vanilla)
+    out <- rbind(res.exact, res.naive, res.split, res.KFglobal)
     ##out <- rbind(res.split)
 
     return(out)

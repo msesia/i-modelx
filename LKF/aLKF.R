@@ -16,7 +16,7 @@ partition_covariates <- function(Z, vars.split) {
 }
 
 aLKF_analysis <- function(Y, X, Xk, Z.noint, Z.int, ite=NULL, family = "binomial", fdr.nominal=0.1, fdr.offset=0,
-                         naive=FALSE, split=FALSE, vanilla=FALSE, cross.prior=TRUE, num.int=2, verbose=TRUE) {
+                         naive=FALSE, split=FALSE, KFglobal=FALSE, cross.prior=TRUE, num.int=2, verbose=TRUE) {
 
     colnames(X) <- paste("X", 1:ncol(X), sep="_")
     colnames(Xk) <- paste("Xk", 1:ncol(Xk), sep="_")
@@ -25,11 +25,11 @@ aLKF_analysis <- function(Y, X, Xk, Z.noint, Z.int, ite=NULL, family = "binomial
 
     if(naive) cross.prior = FALSE
     if(split) cross.prior = FALSE
-    if(vanilla) cross.prior = TRUE
+    if(KFglobal) cross.prior = TRUE
 
     random.swap=TRUE
     if(naive) random.swap = FALSE
-    if(vanilla) random.swap = FALSE
+    if(KFglobal) random.swap = FALSE
 
     n <- length(Y)
     N <- ncol(X)
@@ -54,7 +54,7 @@ aLKF_analysis <- function(Y, X, Xk, Z.noint, Z.int, ite=NULL, family = "binomial
     }
 
     ## Partition the covariate space using the lasso with interactions
-    if(vanilla) {
+    if(KFglobal) {
         partition <- tibble(variable=NA, covariate=NA, covariate.name=NA, importance=NA) %>% head(0)
         env.list <- lapply(1:N, function(j) rep(1,n))
     } else {
@@ -66,7 +66,7 @@ aLKF_analysis <- function(Y, X, Xk, Z.noint, Z.int, ite=NULL, family = "binomial
 
     ## Compute statistics for each variable in each group
     stats <- aLKF_compute_stats(Y[fold.2], X[fold.2,], Xk[fold.2,], Z.noint[fold.2,], Z.int[fold.2,], V.swap.2[fold.2,], partition,
-                               family=family, random.swap=random.swap, vanilla=vanilla, cross.prior=cross.prior, scale.variables=TRUE, verbose=verbose)
+                               family=family, random.swap=random.swap, KFglobal=KFglobal, cross.prior=cross.prior, scale.variables=TRUE, verbose=verbose)
 
     ## Make the full list of tested hypotheses and check which of them are truly null
     hypotheses <- aLKF_define_hypotheses(partition, env.list, N, ite=ite)
@@ -369,7 +369,7 @@ aLKF_filter_stats <- function(stats, fdr.nominal=0.1, fdr.offset=NULL) {
 }
 
 aLKF_compute_stats <- function(Y, X, Xk, Z.noint, Z.int, V.swap, partition, family = "binomial",
-                              random.swap=TRUE, vanilla=FALSE, cross.prior=TRUE, scale.variables=TRUE, verbose=TRUE) {
+                              random.swap=TRUE, KFglobal=FALSE, cross.prior=TRUE, scale.variables=TRUE, verbose=TRUE) {
 
     N <- ncol(X)
 
@@ -386,7 +386,7 @@ aLKF_compute_stats <- function(Y, X, Xk, Z.noint, Z.int, V.swap, partition, fami
         X.covar <- safe.scale(X.covar)
     }
 
-    if(vanilla) {
+    if(KFglobal) {
         ## Compute the test statistics simultaneously for all groups, with the usual lasso approach
         data.all <- cbind(X, Xk, X.covar)
         if(verbose) cat(sprintf("Computing all statistics simultaneously... "))

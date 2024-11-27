@@ -15,14 +15,14 @@ df <- results %>%
     group_by(n, p, p_causal, p_causal_covar, signal_mean, signal_std, delta_inter, rho, Method, Key) %>%
     summarize(Value.se=2*sd(Value,na.rm=T)/sqrt(n()), Value=mean(Value,na.rm=T), Size=n())
 
-method.levels <- c("Exact", "Naive", "Split", "Vanilla")
-method.labels <- c("SKF", "Naive", "Split", "Vanilla")
+method.levels <- c("Exact", "Naive", "Split", "KFglobal")
+method.labels <- c("aLKF", "Naive", "Split", "KFglobal")
 color.scale <- c("blue2", "#009E73", "#CC79A7", "orange")
 shape.scale <- c(15, 4, 8, 1)
 
-df.nominal <- tibble(Key="FDR", Value=0.1, Method="Vanilla")
-df.ghost.1 <- tibble(Key=c("Power", "FDR","Causal.prop"), Value=0, n=1000, Method="Vanilla")
-df.ghost.2 <- tibble(Key=c("Power", "FDR","Causal.prop"), Value=1, n=1000, Method="Vanilla")
+df.nominal <- tibble(Key="FDR", Value=0.1, Method="KFglobal")
+df.ghost.1 <- tibble(Key=c("Power", "FDR","Causal.prop"), Value=0, n=1000, Method="KFglobal")
+df.ghost.2 <- tibble(Key=c("Power", "FDR","Causal.prop"), Value=1, n=1000, Method="KFglobal")
 df.ghost <- rbind(df.ghost.1, df.ghost.2)
 
 keys.levels <- c("FDR", "Power", "Causal.prop", "Beta.sd")

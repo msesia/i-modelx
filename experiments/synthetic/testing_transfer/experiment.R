@@ -61,7 +61,7 @@ if(FALSE) {
     seed.model = 2022
     naive = FALSE
     split = FALSE
-    vanilla = FALSE
+    KFglobal = FALSE
     method.cluster = "BART"
 }
 
@@ -277,7 +277,7 @@ evaluate_results <- function(discoveries, hypotheses) {
     return(res.tmp)
 }
 
-analysis_knockoffs <- function(Z, X, Y, q=0.1, offset=0, cluster.method="Lasso", naive=FALSE, split=FALSE, vanilla=FALSE) {
+analysis_knockoffs <- function(Z, X, Y, q=0.1, offset=0, cluster.method="Lasso", naive=FALSE, split=FALSE, KFglobal=FALSE) {
     n = nrow(X)
     p1 = ncol(X)
     Z0 <- Z[,1:p0]
@@ -286,11 +286,11 @@ analysis_knockoffs <- function(Z, X, Y, q=0.1, offset=0, cluster.method="Lasso",
     cross.prior=TRUE
     if(naive) cross.prior = FALSE
     if(split) cross.prior = FALSE
-    if(vanilla) cross.prior = FALSE
+    if(KFglobal) cross.prior = FALSE
 
     random.swap=TRUE
     if(naive) random.swap = FALSE
-    if(vanilla) random.swap = FALSE
+    if(KFglobal) random.swap = FALSE
 
     generate.knockoff.treat <- function(X) {
         p1 = ncol(X)
@@ -320,7 +320,7 @@ analysis_knockoffs <- function(Z, X, Y, q=0.1, offset=0, cluster.method="Lasso",
     X.swap = knockoff.random.swap(X, X.k, V.swap.1)
 
     ## Clustering HTE using knockoff-augmented data
-    if(vanilla) {
+    if(KFglobal) {
         env.list <- lapply(1:p1, function(j) { rep(1,n) })
     } else {
         cat(sprintf("Clustering covariate space...\n"))
@@ -347,7 +347,7 @@ analysis_knockoffs <- function(Z, X, Y, q=0.1, offset=0, cluster.method="Lasso",
     flush.console()
 
     ## Prepare stats for multi-environment knockoff filter
-    if(vanilla) {
+    if(KFglobal) {
         W.matrix = unlist(stats$W)
     } else {
         W.stats <- lapply(1:length(stats$W), function(j) {
@@ -362,7 +362,7 @@ analysis_knockoffs <- function(Z, X, Y, q=0.1, offset=0, cluster.method="Lasso",
     
     ## Apply the multi-environment knockoff filter
     discoveries <- tibble()
-    if(vanilla) {
+    if(KFglobal) {
         W.vec <- as.numeric(W.matrix)
         thres <- knockoff::knockoff.threshold(W.vec, fdr=fdr.nominal, offset=offset)
         S <- which(W.vec >= thres)
@@ -492,25 +492,25 @@ experiment <- function(seed, seed.model=2022) {
     flush.console()
 
     ###############################
-    ## VANILLA knockoff analysis ##
+    ## GLOBAL knockoff analysis ##
     ###############################
-    cat(sprintf("Applying VANILLA method...\n"))
+    cat(sprintf("Applying GLOBAL method...\n"))
     flush.console()
     ## Compute list of discoveries
-    out.vanilla <- analysis_knockoffs(Z, X, Y, q=fdr.nominal, offset=offset, vanilla=TRUE)
-    discoveries.vanilla <- out.vanilla$discoveries
+    out.KFglobal <- analysis_knockoffs(Z, X, Y, q=fdr.nominal, offset=offset, KFglobal=TRUE)
+    discoveries.KFglobal <- out.KFglobal$discoveries
     ## Define hypotheses
-    vars.split <- out.vanilla$splits
+    vars.split <- out.KFglobal$splits
     hypotheses <- define_hypotheses(vars.split, beta_e, Z, X)
     hypotheses.test <- define_hypotheses(env.list, beta_e.test, Z.test, X)
     ## Assess results
-    res.vanilla <- evaluate_results_grouped(discoveries.vanilla, hypotheses) %>% mutate(Method="Vanilla", Test=FALSE, q=fdr.nominal, offset=offset)
-    res.vanilla.test <- evaluate_results_grouped(discoveries.vanilla, hypotheses.test) %>% mutate(Method="Vanilla", Test=TRUE, q=fdr.nominal, offset=offset)
-    cat(sprintf("Done with VANILLA method.\n"))
+    res.KFglobal <- evaluate_results_grouped(discoveries.KFglobal, hypotheses) %>% mutate(Method="KFglobal", Test=FALSE, q=fdr.nominal, offset=offset)
+    res.KFglobal.test <- evaluate_results_grouped(discoveries.KFglobal, hypotheses.test) %>% mutate(Method="KFglobal", Test=TRUE, q=fdr.nominal, offset=offset)
+    cat(sprintf("Done with GLOBAL method.\n"))
     flush.console()
 
     ## Combine results
-    out <- rbind(res.exact, res.exact.test, res.naive, res.naive.test, res.split, res.split.test, res.vanilla, res.vanilla.test)
+    out <- rbind(res.exact, res.exact.test, res.naive, res.naive.test, res.split, res.split.test, res.KFglobal, res.KFglobal.test)
 
     return(out)
 }

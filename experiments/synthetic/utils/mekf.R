@@ -1,7 +1,7 @@
 suppressMessages(library(glmnet))
 
 knockoff.random.swap <- function(X, X.k, V.swap) {
-    ## Create masked data set by swapping treatments-knockoffs
+    ## Create cloaked data set by swapping treatments-knockoffs
     n = nrow(X)
     X.aug <- cbind(X, X.k)
     X.out <- X.aug
@@ -36,13 +36,13 @@ compute_stats_by_group <- function(Z, X, Xk, Y, V.swap, env.list, family = "gaus
         ## gamma.seq = seq(0,1,length.out=10) # Sequence of prior weights to consider
         ## err.seq = sapply(gamma.seq, function(gamma) eval_gamma(gamma))
 
-    ## Create masked data set by swapping treatments-knockoffs
-    X.Xk.mask <- knockoff.random.swap(X, Xk, V.swap)
-    X.mask <- X.Xk.mask[,1:N]
-    Xk.mask <- X.Xk.mask[,(N+1):(2*N)]
-    data.mask = cbind(Z, X.Xk.mask)
-    ## Fit the lasso on the masked data
-    cv.fit <- cv.glmnet(data.mask, Y, family = family, nfolds=nfolds, alpha=alpha)
+    ## Create cloaked data set by swapping treatments-knockoffs
+    X.Xk.cloaked <- knockoff.random.swap(X, Xk, V.swap)
+    X.cloaked <- X.Xk.cloaked[,1:N]
+    Xk.cloaked <- X.Xk.cloaked[,(N+1):(2*N)]
+    data.cloaked = cbind(Z, X.Xk.cloaked)
+    ## Fit the lasso on the cloaked data
+    cv.fit <- cv.glmnet(data.cloaked, Y, family = family, nfolds=nfolds, alpha=alpha)
     beta.hat.prior = coef(cv.fit, s="lambda.min")[-1]
     beta.hat.prior.z = abs(beta.hat.prior[1:p.z])
     beta.hat.prior = abs(beta.hat.prior[(p.z+1):(p.z+N)])+abs(beta.hat.prior[(p.z+N+1):(p.z+2*N)])
@@ -56,19 +56,19 @@ compute_stats_by_group <- function(Z, X, Xk, Y, V.swap, env.list, family = "gaus
                 flush.console()
             }
             if(random.swap) {
-                ## Create masked data set by swapping treatments-knockoffs, everywhere except in the current variable-environment
+                ## Create cloaked data set by swapping treatments-knockoffs, everywhere except in the current variable-environment
                 idx.env = which(env.list[[j]]==k)
                 V.swap.2 <- V.swap
                 V.swap.2[idx.env,j] = 0
-                X.mask.2 = X * (1-V.swap.2) + Xk * V.swap.2
-                Xk.mask.2 = X * V.swap.2 + Xk * (1-V.swap.2)
+                X.cloaked.2 = X * (1-V.swap.2) + Xk * V.swap.2
+                Xk.cloaked.2 = X * V.swap.2 + Xk * (1-V.swap.2)
             } else {
-                X.mask = X
-                Xk.mask = Xk
+                X.cloaked = X
+                Xk.cloaked = Xk
             }
             if((cross.prior)) {
                 ## Keep only the observations from this environment
-                data.X = cbind(Z, X.mask.2, Xk.mask.2)[idx.env,]
+                data.X = cbind(Z, X.cloaked.2, Xk.cloaked.2)[idx.env,]
                 data.Y = Y[idx.env]
                 if(calibrate.gamma) {
                     ## Fit the lasso, tuning weight of prior
@@ -112,12 +112,12 @@ compute_stats_by_group <- function(Z, X, Xk, Y, V.swap, env.list, family = "gaus
             } else {
                 if(residuals) {
                     if(length(idx.env)>0) {
-                        ## Fit the lasso on the masked data from all environments (without current variable)
-                        data.mask = cbind(X.mask[,-j], Xk.mask[,-j],Z)
-                        cv.fit.other <- cv.glmnet(data.mask, Y, family = family, nfolds=nfolds, alpha=alpha)
+                        ## Fit the lasso on the cloaked data from all environments (without current variable)
+                        data.cloaked = cbind(X.cloaked[,-j], Xk.cloaked[,-j],Z)
+                        cv.fit.other <- cv.glmnet(data.cloaked, Y, family = family, nfolds=nfolds, alpha=alpha)
                         beta.hat.other = coef(cv.fit.other, s="lambda.min")[-1]
                         ## Compute 'residuals' in current environment
-                        offset <- data.mask[idx.env,] %*% beta.hat.other
+                        offset <- data.cloaked[idx.env,] %*% beta.hat.other
                         ## Fit new model
                         lm.fit <- glm(Y[idx.env]~offset+X[idx.env,j]+Xk[idx.env,j],family=family)
                         beta.hat <- as.numeric(summary(lm.fit)$coefficients[-c(1,2),3])
@@ -127,7 +127,7 @@ compute_stats_by_group <- function(Z, X, Xk, Y, V.swap, env.list, family = "gaus
                         w <- 0
                     }
                 } else {
-                    data.X = cbind(Z, X.mask, Xk.mask)
+                    data.X = cbind(Z, X.cloaked, Xk.cloaked)
                     data.Y = Y
                     cv.fit <- cv.glmnet(data.X, data.Y, alpha=alpha, family = family, nfolds=nfolds)
                     ## Extract the importance statistics for all treatments

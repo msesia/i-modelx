@@ -15,26 +15,26 @@ compute_stats_with_prior <- function(Zs, Xs, X_ks, Ys, family = "gaussian", verb
     for (k in 1:num_env){
         if(verbose) cat(sprintf("Computing statistics for environment %d...\n", k))
 
-        X_stack_mask = NULL
-        X_stack_k_mask = NULL
+        X_stack_cloaked = NULL
+        X_stack_k_cloaked = NULL
         y_stack = NULL
         env_membership = NULL
         for (k2 in 1:num_env) {
-            ## Swap original-knockoffs in all environments 
+            ## Swap original-knockoffs in all environments (data cloaking)
             n = dim(Xs[[k2]])[1]
             M.swap = matrix(rbinom(n*p,1,1/2), n)
-            X_mask = Xs[[k2]] * (1-M.swap) + X_ks[[k2]] * M.swap
-            X_k_mask = Xs[[k2]] * M.swap + X_ks[[k2]] * (1-M.swap)
-            X_stack_mask = rbind(X_stack_mask, X_mask)
-            X_stack_k_mask = rbind(X_stack_k_mask, X_k_mask)
+            X_cloaked = Xs[[k2]] * (1-M.swap) + X_ks[[k2]] * M.swap
+            X_k_cloaked = Xs[[k2]] * M.swap + X_ks[[k2]] * (1-M.swap)
+            X_stack_cloaked = rbind(X_stack_cloaked, X_cloaked)
+            X_stack_k_cloaked = rbind(X_stack_k_cloaked, X_k_cloaked)
             y_stack = c(y_stack, Ys[[k2]])
             env_membership = c(env_membership, rep(k2, dim(Xs[[k2]])[1]))
         }
 
         ## Fit the lasso on all environments
-        X_Xk_stack_mask = cbind(X_stack_mask, X_stack_k_mask)
-        ##cv_fit = cv.glmnet(X_Xk_stack_mask[env_membership!=k,], y_stack[env_membership!=k], alpha=0)
-        cv_fit = cv.glmnet(X_Xk_stack_mask, y_stack, alpha=0, family = family)
+        X_Xk_stack_cloaked = cbind(X_stack_cloaked, X_stack_k_cloaked)
+        ##cv_fit = cv.glmnet(X_Xk_stack_cloaked[env_membership!=k,], y_stack[env_membership!=k], alpha=0)
+        cv_fit = cv.glmnet(X_Xk_stack_cloaked, y_stack, alpha=0, family = family)
         beta.hat.prior = coef(cv_fit, s="lambda.min")[-1]
         beta.hat.prior = abs(beta.hat.prior[1:p])+abs(beta.hat.prior[(p+1):(2*p)])
 
