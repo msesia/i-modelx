@@ -791,7 +791,7 @@ results.df = data.frame(fdp = fdp,
                         power_cond_association_deconstruct_main = power_cond_association_deconstruct_main, 
                         power_cond_association_deconstruct_int = power_cond_association_deconstruct_int, 
                         heritability = heritability,
-                        sparsity = sparsity, amp = amp, fdr = fdr, propmain = propmain, method = "sskf")
+                        sparsity = sparsity, amp = amp, fdr = fdr, propmain = propmain, method = "naive")
 
 print("Column means without NA")
 results.df %>% 
