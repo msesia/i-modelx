@@ -1,11 +1,12 @@
+# Reproducing the real data analysis results
 
 This file outlines how to reproduce the results from the real data analysis (section 3.3 and appendix A7). 
 
-# Step 1: Construct knockoffs 
+## Step 1: Construct knockoffs 
 
 Knockoffs can be constructed following [Sesia et al. (2021)](https://www.pnas.org/doi/10.1073/pnas.2105841118). Details on the knockoff construction can be found [here](https://msesia.github.io/knockoffgwas/). The software for knockoff construction is available [here](https://github.com/msesia/knockoffgwas). 
 
-# Step 2: Construct cloaked data 
+## Step 2: Construct cloaked data 
 
 To construct the cloaked data, two steps are required. 
 
@@ -22,7 +23,7 @@ This merges the chromosome specific files back together, orders them as in the o
   - *utils/order_chr_merged_file.R*
   - *utils/knockoffs_gof_swapping.R*
 
-# Step 3: Local knockoff filter 
+## Step 3: Local knockoff filter 
 
 Run the script **batch_scripts/swap_UKB_whr_interactions.sh**. This single script will automatically conduct the steps a) to e) below (these steps do not need to be run individually): 
 
@@ -43,7 +44,7 @@ d) Run lasso within each partition:
 e) Run the global-KF method, and also run the lasso directly after the pre-screening: 
   - *utils/lasso_real_data_after_prescreen.R*
 
-# Step 4: Collect results
+## Step 4: Collect results
 
 - After running *swap_UKB_wnb_interactions.sh*, run **utils/combine_lasso_environments.R** to collect importance statistics from each partition and pass through the knockoff to obtain aLKF rejections. 
 
