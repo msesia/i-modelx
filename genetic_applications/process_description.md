@@ -15,7 +15,7 @@ a) Run functions in **batch_scripts/julia_functions_swapping_gof**.
 This automatically submits separate .sh scripts to cloak the data (randomly swap original and knockoff genotypes) separately by chromosome. Internally, *batch_scripts/julia_functions_swapping_gof* uses the following file (you do not need to run it separately): 
    - *utils/swap_chr.R*.
 
-b) Run the script **utils/swap_UKB_chrm.sh**. 
+b) Run the script **batch_scripts/swap_UKB_chrm.sh**. 
 
 This merges the chromosome specific files back together, orders them as in the original file and to produce goodness-of-fit (GOF) plots. Internally, *utils/swap_UKB_chrm.sh* uses the following files (you do not need to run them separately):
   - *utils/merge_chromosomes.sh* 
@@ -25,7 +25,7 @@ This merges the chromosome specific files back together, orders them as in the o
 
 # Step 3: Local knockoff filter 
 
-Run the script **swap_UKB_wnb_interactions.sh**. This single script will automatically conduct the steps a) to e) below (these steps do not need to be run individually): 
+Run the script **batch_scripts/swap_UKB_whr_interactions.sh**. This single script will automatically conduct the steps a) to e) below (these steps do not need to be run individually): 
 
 a) Pre-screening:
   - *utils/lasso_swapped.R*
