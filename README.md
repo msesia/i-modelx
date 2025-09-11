@@ -14,7 +14,7 @@ We introduce  local conditional hypotheses that express how the  relation betwee
 
 This repository contains the following folders: 
 
-- **genetic_applications**: This folder contains instructions and all scripts required to reproduce the results from *section 3.2, 3.3, appendix A6 and A7*. The folder does not contain any data files. We have applied for the UK Biobank data and interested parties can [apply to the UK Biobank](https://www.ukbiobank.ac.uk/enable-your-research/apply-for-access) for data access. 
+- **genetic_applications**: This folder contains instructions and all scripts required to reproduce the results from *section 3.2, section 4, appendix A6 and A7*. The folder does not contain any data files. We have applied for the UK Biobank data and interested parties can [apply to the UK Biobank](https://www.ukbiobank.ac.uk/enable-your-research/apply-for-access) for data access. 
 
 - **experiments**: This folder contains the required scripts to reproduce the synthetic experiment from *section 3.1* and the transfer experiment from *appendix A8.2* (subfolder *synthetic*)
 

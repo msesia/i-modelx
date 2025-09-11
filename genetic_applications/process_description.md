@@ -1,6 +1,6 @@
 # Reproducing the real data analysis results
 
-This file outlines how to reproduce the results from the real data analysis (section 3.3 and appendix A7). 
+This file outlines how to reproduce the results from the real data analysis (section 4 and appendix A7). 
 
 ## Step 1: Construct knockoffs 
 
@@ -48,8 +48,8 @@ e) Run the global-KF method, and also run the lasso directly after the pre-scree
 
 - After running *swap_UKB_wnb_interactions.sh*, run **utils/combine_lasso_environments.R** to collect importance statistics from each partition and pass through the knockoff to obtain aLKF rejections. 
 
-- The script **utils/compare_rejections_aLKF_globalKF_fixedKF.R** compares the rejections between the aLKF, global KF and the Fixed-LKF for the Venn diagramm and table in appendix A7 and table in section 3.3.
-- The script **utils/manhattan_plot.R** creates the Manhattan plot in section 3.3. 
+- The script **utils/compare_rejections_aLKF_globalKF_fixedKF.R** compares the rejections between the aLKF, global KF and the Fixed-LKF for the Venn diagramm and table in appendix A7 and table in section 4.
+- The script **utils/manhattan_plot.R** creates the Manhattan plot in section 4. 
 
 - Note: To run the separate analysis for males and females, submit the script **utils/kf_male_female.sh**, which uses (*utils/male_female_whr.R*).
 
