@@ -13,7 +13,7 @@ The analysis was conducted in **R/4.2.0** and **Python/3.7.6**.
 
 ## Step 1: Construct knockoffs for treatments
 
-Knockoffs for the binary treatment assignments are constructed using the Metropolized knockoff sampler of [Bates et al. (2020)](https://arxiv.org/abs/2002.08943).  
+Knockoffs for the binary treatment assignments are constructed using the Metropolized knockoff sampler of [Bates et al. (2020)]([https://arxiv.org/abs/1903.00434](https://arxiv.org/abs/1903.00434)).  
 
 - Run the script **setup/submit_knockoffs.sh**.  
   This submits jobs (or runs locally if uncommented) to generate knockoffs for the 5 treatment variables, repeating the process across 100 random seeds.  
@@ -30,7 +30,7 @@ Outputs are stored in:
 
 ## Step 2: Simulate semi-synthetic outcomes
 
-Because the real donation outcome is extremely imbalanced, we simulate semi-synthetic outcomes according to the causal logistic model in Appendix A4.2 (Eq. (A.4.2.1)).  
+Because the real donation outcome is extremely imbalanced, we simulate semi-synthetic outcomes according to the causal logistic model described in Appendix A4.2.  
 
 - Run the script **experiments/submit_generate_donations.sh**.  
   This calls **experiments/generate_donations.sh**, which in turn runs **experiments/generate_donations.R**.  
@@ -55,19 +55,11 @@ This script:
 - Runs benchmark methods (global knockoff filter, naive local filter, data splitting).  
 - Repeats the analysis across multiple seeds for independent replicates.  
 
-Optional: **experiments/submit_experiment_2.sh** provides a variant using **experiment_2.R** with alternative configurations.  
-
 ---
 
 ## Step 4: Collect results and generate plots
 
 - Run **experiments/make_plots.R** to compile the results across experiments and generate figures.  
-  This script produces Figure A.4.2.1 (performance comparison of methods) and diagnostic plots for the knockoffs.  
-
-Internally, the scripts *utils_ci.R* and *utils_ci_sharp.R* provide helper functions for confidence intervals and performance summaries.  
-
-Outputs include:  
-- Performance summaries (FDR, power, homogeneity).  
-- Plots saved into the `figures/` directory, including **experiment_blood.pdf** (as in Appendix A4.2).  
+  This script produces Figure A.4.  
 
 ---
