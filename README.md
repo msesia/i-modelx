@@ -16,7 +16,7 @@ This repository contains the following folders:
 
 - **genetic_applications**: This folder contains instructions and all scripts required to reproduce the results from *section 3.2, section 4, appendix A6 and A7*. The folder does not contain any data files. We have applied for the UK Biobank data and interested parties can [apply to the UK Biobank](https://www.ukbiobank.ac.uk/enable-your-research/apply-for-access) for data access. 
 
-- **experiments**: This folder contains the required scripts to reproduce the synthetic experiment from *section 3.1* and the transfer experiment from *appendix A8.2* (subfolder *synthetic*)
+- **experiments**: This folder contains the required scripts to reproduce the synthetic experiment from *section 3.1* and the transfer experiment from *appendix A8.2* (subfolder *synthetic*). It also contains the scripts required to reproduce the results from *appendix A4.2* using data from the blood donation randomized experiment. This folder does not contain any data files. We obtained access to anonymized data from the randomized study of blood donation incentives from: Sun, T., G. Gao, and G. Z. Jin (2019). Mobile messaging for offline group formation in prosocial activities: A large field experiment. Manag. Science 65 (6), 2717–2736. Interested parties can request acces to these data by contacting the authors of that paper.
 
 - **tutorials**: This folder contains two tutorials: One first tutorial demonstrates the basic usage of the adaptive Local Knockoff Filter. The second tutorial demonstrates its inner workings. 
 
